@@ -1,11 +1,17 @@
 package com.priceminister.account;
 
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import com.priceminister.account.implementation.*;
+import com.priceminister.account.implementation.CustomerAccount;
+import com.priceminister.account.implementation.CustomerAccountRule;
+import com.priceminister.account.util.MessageEnum;
 
 
 /**
@@ -23,6 +29,9 @@ public class CustomerAccountTest {
     Account customerAccount;
     AccountRule rule;
 
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     /**
      * @throws java.lang.Exception
      */
@@ -36,7 +45,7 @@ public class CustomerAccountTest {
      */
     @Test
     public void testAccountWithoutMoneyHasZeroBalance() {
-        fail("not yet implemented");
+    	assertEquals(new Double(0.0), customerAccount.getBalance());
     }
     
     /**
@@ -44,18 +53,111 @@ public class CustomerAccountTest {
      */
     @Test
     public void testAddPositiveAmount() {
-        fail("not yet implemented");
+        customerAccount.add(2.0);
+
+        assertEquals(new Double(2.0), customerAccount.getBalance());
     }
-    
+
     /**
-     * Tests that an illegal withdrawal throws the expected exception.
-     * Use the logic contained in CustomerAccountRule; feel free to refactor the existing code.
+     * Adds negative money to the account and checks that an exception is raised.
      */
     @Test
-    public void testWithdrawAndReportBalanceIllegalBalance() {
-        fail("not yet implemented");
+    public void testAddNegativeAmount() {
+
+    	thrown.expect(IllegalAmountException.class);
+        thrown.expectMessage(is(MessageEnum.ILLEGAL_ADDED_AMOUNT_MESSAGE.getMessage()));
+
+        customerAccount.add(-1.0);
     }
-    
-    // Also implement missing unit tests for the above functionalities.
+
+    /**
+     * Adds zero amount of money to the account and checks that an exception is raised.
+     */
+    @Test
+    public void testAddZeroAmount() {
+
+    	thrown.expect(IllegalAmountException.class);
+        thrown.expectMessage(is(MessageEnum.ILLEGAL_ADDED_AMOUNT_MESSAGE.getMessage()));
+
+        customerAccount.add(0.0);
+    }
+
+    /**
+     * Adds null to the account and checks that an exception is raised.
+     */
+    @Test
+    public void testAddNullAmount() {
+
+    	thrown.expect(IllegalAmountException.class);
+        thrown.expectMessage(is(MessageEnum.NULL_ADDED_AMOUNT_MESSAGE.getMessage()));
+
+        customerAccount.add(null);
+    }
+
+    /**
+     * Tests that an illegal withdrawal throws the expected exception.
+     */
+    @Test
+    public void testWithdrawAndReportBalanceIllegalBalance() throws IllegalBalanceException {
+
+    	thrown.expect(IllegalBalanceException.class);
+
+        rule = new CustomerAccountRule();
+    	customerAccount.withdrawAndReportBalance(3.0, rule);
+    }
+
+    /**
+     * Withdrawals negative amount from the account and checks that an exception is raised.
+     * @throws IllegalBalanceException 
+     */
+    @Test
+    public void testWithdrawalNegativeAmount() throws IllegalBalanceException {
+
+    	thrown.expect(IllegalAmountException.class);
+        thrown.expectMessage(is(MessageEnum.ILLEGAL_WITHDRAWN_AMOUNT_MESSAGE.getMessage()));
+
+        customerAccount.withdrawAndReportBalance(-1.0, rule);
+    }
+
+    /**
+     * Withdrawals zero amount from the account and checks that an exception is raised.
+     * @throws IllegalBalanceException 
+     */
+    @Test
+    public void testWithdrawalZeroAmount() throws IllegalBalanceException {
+
+    	thrown.expect(IllegalAmountException.class);
+        thrown.expectMessage(is(MessageEnum.ILLEGAL_WITHDRAWN_AMOUNT_MESSAGE.getMessage()));
+
+        customerAccount.withdrawAndReportBalance(0.0, rule);
+    }
+
+    /**
+     * Withdrawals null from the account and checks that an exception is raised.
+     * @throws IllegalBalanceException 
+     */
+    @Test
+    public void testWithdrawalNullAmount() throws IllegalBalanceException {
+
+    	thrown.expect(IllegalAmountException.class);
+        thrown.expectMessage(is(MessageEnum.NULL_WITHDRAWN_AMOUNT_MESSAGE.getMessage()));
+
+        customerAccount.withdrawAndReportBalance(null, rule);
+    }
+
+    /**
+     * Tests Withdraw amount of money from account's balance.
+     */
+    @Test
+    public void testWithdraw() throws IllegalBalanceException {
+
+		customerAccount.add(5.0);
+
+		rule = new CustomerAccountRule();
+		customerAccount.withdrawAndReportBalance(3.0, rule);
+
+		assertEquals(new Double(2.0), customerAccount.getBalance());
+
+    }
 
 }
